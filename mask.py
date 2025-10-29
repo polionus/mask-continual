@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 import logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler(), logging.FileHandler("train.log", mode="a")]
 )
@@ -111,15 +111,15 @@ def train(model: eqx.Module, X: jax.Array, y: jax.Array, optimizer, opt_state, n
         model, opt_state, loss = make_step(model, X, y_onehot, opt_state)
 
         if epoch % 100 == 0:    
-            logging.debug(f"Epoch: {epoch}, Loss: {loss} ")
+            logging.info(f"Epoch: {epoch}, Loss: {loss} ")
 
-    logging.debug(f"Final Loss: {loss} ")
+    logging.info(f"Final Loss: {loss} ")
     return model
 
 
-logging.debug("Starting training...")
+logging.info("Starting training...")
 model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epochs=50000)
-logging.debug("Finished Training")
+logging.info("Finished Training")
 
 ### Save model:
 eqx.tree_serialise_leaves("Model.eqx", model)
