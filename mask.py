@@ -7,6 +7,13 @@ import optax
 import tyro
 
 
+### What would be the output of the masks if we did trained for just a little bit?
+### Would there be a lot of bang for our buck?
+
+
+### Should we mask weights or activations?
+### It is definitely possible to have lower loss with more parameters in the randomly initialized network.
+
 
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
@@ -20,7 +27,7 @@ logging.basicConfig(
 )
 
 
-def main(width = 1024, depth = 10):
+def main(width = 1024, depth = 10, seed = 0, train_weights = False, num_spochs = 3):
     X, y = load_iris(return_X_y=True)
     X = StandardScaler().fit_transform(X)
     y = jnp.array(y)
@@ -30,11 +37,8 @@ def main(width = 1024, depth = 10):
     X = jnp.array(X, dtype=jnp.float32)
 
 
-   
-
-
     ### Let's train a mask over a network and investigate:
-    key = jax.random.key(100)
+    key = jax.random.key(seed)
     keygen = make_key_gen(key)
 
 
@@ -61,7 +65,9 @@ def main(width = 1024, depth = 10):
             self.mask_logits = [jax.random.normal(key = next(keygen), shape = self.layers[index].out_features) 
                                 for index in range(len(self.layers))]
 
+        ### Use jax.lax.scan to make it faster.
         def __call__(self, x: jax.Array):
+            
             
             for index in range(len(self.layers)):
                 h = self.layers[index](x) 
@@ -80,12 +86,12 @@ def main(width = 1024, depth = 10):
     opt_state = optimizer.init(eqx.filter(model, eqx.is_inexact_array))
 
     ##Mask everything: 
-    filter_spec = jtu.tree_map(lambda _: False, model)
+    filter_spec = jtu.tree_map(lambda _: train_weights, model)
 
     filter_spec = eqx.tree_at(
         lambda tree: tree.mask_logits,                     # select the list of mask arrays
         filter_spec,
-        replace=[True] * len(model.mask_logits),     # one boolean per mask array
+        replace=[not train_weights] * len(model.mask_logits),     # one boolean per mask array
     )
 
 
@@ -118,7 +124,7 @@ def main(width = 1024, depth = 10):
 
 
     logging.info("Starting training...")
-    model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epochs=50000)
+    model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epochs=num_epochs)
     logging.info("Finished Training")
 
     ### Save model:
