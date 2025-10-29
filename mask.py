@@ -122,5 +122,5 @@ model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epoch
 logging.info("Finished Training")
 
 ### Save model:
-eqx.tree_serialise_leaves("Model.eqx", model)
+eqx.tree_serialise_leaves("model.eqx", model)
 
