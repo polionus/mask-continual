@@ -27,7 +27,7 @@ logging.basicConfig(
 )
 
 
-def main(width = 1024, depth = 10, seed = 0, train_weights = False, num_spochs = 3):
+def main(width = 1024, depth = 10, seed = 0, train_weights = False, num_epochs = 3):
     X, y = load_iris(return_X_y=True)
     X = StandardScaler().fit_transform(X)
     y = jnp.array(y)
