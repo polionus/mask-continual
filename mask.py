@@ -5,8 +5,19 @@ import equinox as eqx
 from rng import make_key_gen
 import optax
 
+
+
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
+
+
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("train.log", mode="a")]
+)
+
 
 
 X, y = load_iris(return_X_y=True)
@@ -99,12 +110,13 @@ def train(model: eqx.Module, X: jax.Array, y: jax.Array, optimizer, opt_state, n
     for epoch in range(num_epochs):
         model, opt_state, loss = make_step(model, X, y_onehot, opt_state)
 
-        if epoch % 100 == 0:
-            print(f"Loss:{loss}")
+        if epoch % 100 == 0:    
+            logging.info(f"Epoch: {epoch}, Loss: {loss} ")
 
-    print(f"Final Loss:{loss}")
+    logging.info(f"Final Loss: {loss} ")
     return model
 
 
+logging.info("Starting training...")
 model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epochs=50000)
-print((jax.nn.sigmoid(model.mask_logits[0]) > 0.5).astype(jnp.float32))
+logging.info("Finished Training")
