@@ -120,3 +120,7 @@ def train(model: eqx.Module, X: jax.Array, y: jax.Array, optimizer, opt_state, n
 logging.debug("Starting training...")
 model = train(model, X, y, optimizer= optimizer, opt_state= opt_state, num_epochs=50000)
 logging.debug("Finished Training")
+
+### Save model:
+eqx.tree_serialise_leaves("Model.eqx", model)
+
